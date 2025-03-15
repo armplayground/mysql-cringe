@@ -1,0 +1,10 @@
+# src extracted
+src/
+pkg/
+# src compressed
+mysql-*.tar.gz
+mysql-*.tar.gz.asc
+# packages
+libmysqlclient-cringe-*.pkg.tar.zst
+mysql-cringe-*.pkg.tar.zst
+mysql-cringe-clients-*.pkg.tar.zst

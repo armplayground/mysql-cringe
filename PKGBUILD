@@ -4,8 +4,8 @@
 # Contributor: Andrea Scarpino <andrea@archlinux.org>
 # Contributor: Douglas Soares de Andrade <douglas@archlinux.org>
 
-pkgname=('mysql' 'libmysqlclient' 'mysql-clients')
-pkgbase=mysql
+pkgname=('mysql-cringe' 'libmysqlclient-cringe' 'mysql-cringe-clients')
+pkgbase=mysql-cringe
 pkgver=9.2.0
 pkgrel=1
 pkgdesc="Fast SQL database server, community edition"
@@ -15,7 +15,7 @@ makedepends=('openssl' 'zlib' 'cmake' 'systemd-tools' 'systemd-libs' 'libaio'
              'libfido2' 're2' 'rapidjson')
 license=('GPL-2.0-only')
 url="https://www.mysql.com/products/community/"
-source=("https://cdn.mysql.com/Downloads/MySQL-9.2/${pkgbase}-${pkgver}.tar.gz"{,.asc}
+source=("https://cdn.mysql.com/Downloads/MySQL-9.2/mysql-${pkgver}.tar.gz"{,.asc}
         "my-default.cnf"
         "mysql-ld.so.conf"
         "mysql.sysconfig"
@@ -37,7 +37,7 @@ build() {
   mkdir build
   cd build
 
-  cmake "../${pkgbase}-${pkgver}" \
+  cmake "../mysql-${pkgver}" \
     -DCMAKE_AR=/usr/bin/gcc-ar \
     -DCMAKE_RANLIB=/usr/bin/gcc-ranlib \
     -DBUILD_CONFIG=mysql_release \
@@ -82,7 +82,7 @@ build() {
     -DCMAKE_CXX_LINK_FLAGS="${LDFLAGS}" \
     -DDEFAULT_CHARSET=utf8mb4 \
     -DDEFAULT_COLLATION=utf8mb4_unicode_ci \
-    -DWITH_BOOST="../${pkgname}-${pkgver}/boost"
+    -DWITH_BOOST="../mysql-${pkgver}/boost"
   make
 }
 
@@ -93,10 +93,10 @@ check() {
   # ./mtr --parallel=5 --mem --force --max-test-fail=0
 }
 
-package_libmysqlclient(){
+package_libmysqlclient-cringe(){
   pkgdesc="MySQL client libraries"
   depends=('libsasl' 'zlib' 'zstd')
-  conflicts=('libmariadbclient' 'mariadb-libs')
+  conflicts=('libmariadbclient' 'mariadb-libs' 'libmysqlclient')
   provides=("libmariadbclient=${pkgver}" "libmysqlclient=${pkgver}" "mariadb-libs=${pkgver}")
 
   cd build
@@ -107,13 +107,13 @@ package_libmysqlclient(){
 
   install -m 700 -d "${pkgdir}/var/lib/mysql"
   install -m 644 -D "${srcdir}/my-default.cnf" "${pkgdir}/etc/mysql/my.cnf.default"
-  install -m 644 -D "${srcdir}/${pkgbase}-${pkgver}/support-files/mysql.m4" "${pkgdir}/usr/share/aclocal/mysql.m4"
+  install -m 644 -D "${srcdir}/mysql-${pkgver}/support-files/mysql.m4" "${pkgdir}/usr/share/aclocal/mysql.m4"
 }
 
-package_mysql-clients(){
+package_mysql-cringe-clients(){
   pkgdesc="MySQL client tools"
-  depends=('libmysqlclient' 'zlib' 'openssl' 'jemalloc' 'libedit' 'lz4' 'zstd' 'bash')
-  conflicts=('mariadb-clients')
+  depends=('libmysqlclient-cringe' 'zlib' 'openssl' 'jemalloc' 'libedit' 'lz4' 'zstd' 'bash')
+  conflicts=('mariadb-clients' 'mysql-clients')
   provides=("mariadb-clients=${pkgver}" "mysql-clients=${pkgver}")
 
   cd build
@@ -127,7 +127,7 @@ package_mysql-clients(){
   install -m 755 -d "${pkgdir}/usr/share/man/man1"
   for man in mysql mysqladmin mysqlcheck mysqldump mysqlimport mysqlshow mysqlslap mysql_config mysql_config_editor
   do
-    install -m 644 "${srcdir}/${pkgbase}-${pkgver}/man/${man}.1" "${pkgdir}/usr/share/man/man1/${man}.1"
+    install -m 644 "${srcdir}/mysql-${pkgver}/man/${man}.1" "${pkgdir}/usr/share/man/man1/${man}.1"
   done
 
   # install pkgconfig
@@ -140,16 +140,16 @@ package_mysql-clients(){
   rm "${pkgdir}/usr/bin/mysqltest"
 }
 
-package_mysql(){
+package_mysql-cringe(){
   pkgdesc="Fast SQL database server, community edition"
   backup=("etc/mysql/my.cnf"
           "etc/mysqlrouter/mysqlrouter.conf"
           "etc/logrotate.d/mysqlrouter"
           "etc/conf.d/${pkgname}.conf")
   install="${pkgbase}.install"
-  depends=('mysql-clients' 'libsasl' 'zlib' 'jemalloc' 'libaio' 'libtirpc' 'icu'
+  depends=('mysql-cringe-clients' 'libsasl' 'zlib' 'jemalloc' 'libaio' 'libtirpc' 'icu'
            'lz4' 'libevent' 'systemd-libs' 'zstd' 'bash')
-  conflicts=('mariadb')
+  conflicts=('mariadb' 'mysql')
   provides=("mariadb=${pkgver}" "mysql=${pkgver}")
   optdepends=('perl-dbd-mysql: for mysqlhotcopy, mysql_convert_table_format, mysql_setpermission, mysqldumpslow')
   options=('emptydirs')
@@ -234,4 +234,3 @@ package_mysql(){
   patch -Np1 -i "${srcdir}/mysqld_service.patch"
   patch -Np1 -i "${srcdir}/systemd-tmpfiles.patch"
 }
-
