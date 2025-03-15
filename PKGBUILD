@@ -83,7 +83,7 @@ build() {
     -DDEFAULT_CHARSET=utf8mb4 \
     -DDEFAULT_COLLATION=utf8mb4_unicode_ci \
     -DWITH_BOOST="../mysql-${pkgver}/boost"
-  make
+  make -j$(nproc)
 }
 
 check() {
